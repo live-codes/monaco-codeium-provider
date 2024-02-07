@@ -1,13 +1,10 @@
 {
   "name": "@live-codes/monaco-codeium-provider",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AI auto-completion provider for Monaco editor powered by Codeium",
   "main": "dist/index.umd.js",
   "type": "module",
   "module": "dist/index.js",
-  "files": [
-    "dist/**"
-  ],
   "types": "dist/types/index.d.ts",
   "scripts": {
     "build": "npx rimraf ./dist && npm run build:lib && npm run build:types",

@@ -22,7 +22,7 @@ export const getBrowserVersion = () => {
  * Get the current package version. If this fails, a null string is returned.
  */
 export const getPackageVersion = () => {
-  return null;
+  return "1.0.7";
 };
 
 /**

@@ -180,8 +180,8 @@ export class MonacoCompletionProvider {
           }
         )
         .then(resolve)
-        .catch((err) => {
-          console.log("Error: ", err);
+        .catch(() => {
+          // console.log("Error: ", err);
         });
     });
   }
