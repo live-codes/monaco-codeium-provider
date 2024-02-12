@@ -3,19 +3,12 @@
  * @returns The current URL
  */
 export const getCurrentURL = () => {
-  try {
-    return window.location.href;
-  } catch (e) {
-    return null;
-  }
-};
-
-export const getBrowserVersion = () => {
-  try {
-    return window.navigator.userAgent;
-  } catch (e) {
-    return null;
-  }
+  return null;
+  // try {
+  //   return window.location.href;
+  // } catch (e) {
+  //   return null;
+  // }
 };
 
 /**

@@ -11,9 +11,8 @@ import {
   numUtf8BytesToNumCodeUnits,
   numCodeUnitsToNumUtf8Bytes,
   uuid,
-  getBrowserVersion,
-  getCurrentURL,
   getPackageVersion,
+  getCurrentURL,
 } from "./utils";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { LanguageServerService } from "./api/proto/exa/language_server_pb/language_server_connect";
@@ -51,8 +50,8 @@ const EDITOR_API_KEY = "d49954eb-cfba-4992-980f-d8fb37f0e942";
  */
 export class MonacoCompletionProvider {
   authHeader: Record<string, string> = {};
-  private metadata: Metadata;
   private client: PromiseClient<typeof LanguageServerService>;
+  private sessionId: string;
 
   constructor(
     grpcClient: PromiseClient<typeof LanguageServerService>,
@@ -60,17 +59,24 @@ export class MonacoCompletionProvider {
     readonly setMessage: (message: string) => void,
     readonly apiKey?: string | undefined
   ) {
-    this.metadata = new Metadata({
-      ideName: getBrowserVersion() ?? "unknown",
+    this.sessionId = `react-editor-${uuid()}`;
+    this.client = grpcClient;
+
+    const Authorization = `Basic ${this.getMetadata().apiKey}-${
+      this.sessionId
+    }`;
+    this.authHeader = { Authorization };
+  }
+
+  private getMetadata(): Metadata {
+    return new Metadata({
+      ideName: "web",
       ideVersion: getCurrentURL() ?? "unknown",
       extensionName: "@codeium/react-code-editor",
       extensionVersion: getPackageVersion() ?? "unknown",
-      apiKey: apiKey ?? EDITOR_API_KEY,
-      sessionId: `demo-${uuid()}`,
+      apiKey: this.apiKey ?? EDITOR_API_KEY,
+      sessionId: this.sessionId,
     });
-    this.client = grpcClient;
-    const Authorization = `Basic ${this.metadata.apiKey}-${this.metadata.sessionId}`;
-    this.authHeader = { Authorization };
   }
 
   /**
@@ -115,7 +121,7 @@ export class MonacoCompletionProvider {
     try {
       getCompletionsResponse = await this.client.getCompletions(
         {
-          metadata: this.metadata,
+          metadata: this.getMetadata(),
           document: documentInfo,
           editorOptions: editorOptions,
         },
@@ -172,7 +178,7 @@ export class MonacoCompletionProvider {
       this.client
         .acceptCompletion(
           {
-            metadata: this.metadata,
+            metadata: this.getMetadata(),
             completionId: completionId,
           },
           {
