@@ -3,7 +3,9 @@ import { InlineCompletionProvider } from "./InlineCompletionProvider";
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { createPromiseClient } from "@connectrpc/connect";
 import { LanguageServerService } from "./api/proto/exa/language_server_pb/language_server_connect";
+import { Document as DocumentInfo } from "./api/proto/exa/language_server_pb/language_server_pb";
 import { Status } from "./Status";
+import { languageIdToEnum } from "./utils";
 
 export const registerCodeiumProvider = (
   monaco: typeof Monaco,
@@ -11,10 +13,12 @@ export const registerCodeiumProvider = (
     onAutocomplete,
     baseUrl = "https://web-backend.codeium.com",
     apiKey,
+    getEditors = () => [],
   }: {
     onAutocomplete?: (acceptedText: string) => void;
     baseUrl?: string;
     apiKey?: string;
+    getEditors?: () => Monaco.editor.IStandaloneCodeEditor[];
   } = {}
 ) => {
   let acceptedCompletionCount = 1;
@@ -45,6 +49,7 @@ export const registerCodeiumProvider = (
     setCompletionCount,
     setCodeiumStatus,
     setCodeiumStatusMessage,
+    getEditorDocuments,
     apiKey
   );
 
@@ -66,6 +71,28 @@ export const registerCodeiumProvider = (
       }
     }
   );
+
+  function getEditorDocuments(
+    currentEditorModel: Monaco.editor.ITextModel
+  ): DocumentInfo[] {
+    const documents: DocumentInfo[] = [];
+    getEditors().forEach((editor) => {
+      const model = editor.getModel();
+      if (!model || model === currentEditorModel) return;
+      documents.push(
+        new DocumentInfo({
+          absolutePath: model.uri.path,
+          relativePath: model.uri.path.startsWith("/")
+            ? model.uri.path.slice(1)
+            : model.uri.path,
+          text: editor.getValue(),
+          editorLanguage: model.getLanguageId(),
+          language: languageIdToEnum(model.getLanguageId()),
+        })
+      );
+    });
+    return documents;
+  }
 
   // CORS pre-flight cache optimization.
   // try {

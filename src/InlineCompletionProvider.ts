@@ -1,4 +1,5 @@
 import type * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import { Document as DocumentInfo } from "./api/proto/exa/language_server_pb/language_server_pb";
 import { PromiseClient } from "@connectrpc/connect";
 import { Status } from "./Status";
 import { MonacoCompletionProvider } from "./CompletionProvider";
@@ -17,11 +18,15 @@ export class InlineCompletionProvider
 {
   private numCompletionsProvided: number;
   readonly completionProvider: MonacoCompletionProvider;
+
   constructor(
     grpcClient: PromiseClient<typeof LanguageServerService>,
     readonly setCompletionCount: (count: number) => void,
     setCodeiumStatus: (status: Status) => void,
     setCodeiumStatusMessage: (message: string) => void,
+    readonly getEditorDocuments: (
+      currentEditorModel: monaco.editor.ITextModel
+    ) => DocumentInfo[],
     apiKey?: string | undefined
   ) {
     this.numCompletionsProvided = 0;
@@ -43,6 +48,7 @@ export class InlineCompletionProvider
     _context: monaco.languages.InlineCompletionContext,
     token: monaco.CancellationToken
   ) {
+    this.updateOtherDocuments(this.getEditorDocuments(model));
     const completions = await this.completionProvider.provideInlineCompletions(
       model,
       position,
@@ -61,5 +67,9 @@ export class InlineCompletionProvider
 
   public acceptedLastCompletion(completionId: string) {
     this.completionProvider.acceptedLastCompletion(completionId);
+  }
+
+  public updateOtherDocuments(otherDocuments: DocumentInfo[]) {
+    this.completionProvider.otherDocuments = otherDocuments;
   }
 }

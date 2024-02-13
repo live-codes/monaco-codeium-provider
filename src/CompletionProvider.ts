@@ -13,6 +13,7 @@ import {
   uuid,
   getPackageVersion,
   getCurrentURL,
+  languageIdToEnum,
 } from "./utils";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { LanguageServerService } from "./api/proto/exa/language_server_pb/language_server_connect";
@@ -51,6 +52,11 @@ const EDITOR_API_KEY = "d49954eb-cfba-4992-980f-d8fb37f0e942";
 export class MonacoCompletionProvider {
   private client: PromiseClient<typeof LanguageServerService>;
   private sessionId: string;
+
+  /**
+   * A list of other documents to include as context in the prompt.
+   */
+  public otherDocuments: DocumentInfo[] = [];
 
   constructor(
     grpcClient: PromiseClient<typeof LanguageServerService>,
@@ -119,6 +125,18 @@ export class MonacoCompletionProvider {
       insertSpaces: model.getOptions().insertSpaces,
     };
 
+    let includedOtherDocs = this.otherDocuments;
+    if (includedOtherDocs.length > 10) {
+      // console.warn(
+      //   `Too many other documents: ${includedOtherDocs.length} (max 10)`
+      // );
+      includedOtherDocs = includedOtherDocs.slice(0, 10);
+    }
+    // console.log(
+    //   `Included other documents: ${includedOtherDocs.length}`,
+    //   includedOtherDocs.map((d) => d.toJson())
+    // );
+
     // Get completions.
     let getCompletionsResponse: GetCompletionsResponse;
     try {
@@ -127,6 +145,7 @@ export class MonacoCompletionProvider {
           metadata: this.getMetadata(),
           document: documentInfo,
           editorOptions: editorOptions,
+          otherDocuments: includedOtherDocs,
         },
         {
           signal,
@@ -211,10 +230,15 @@ export class MonacoCompletionProvider {
     const numCodeUnits = document.offsetAt(position);
     const offset = numCodeUnitsToNumUtf8Bytes(text, numCodeUnits);
 
+    const language = languageIdToEnum(document.languageId);
+    if (language === Language.UNSPECIFIED) {
+      // console.warn(`Unknown language: ${document.languageId}`);
+    }
+
     const documentInfo = new DocumentInfo({
       text: text,
       editorLanguage: document.languageId,
-      language: Language.PYTHON,
+      language,
       cursorOffset: BigInt(offset),
       lineEnding: "\n",
     });
