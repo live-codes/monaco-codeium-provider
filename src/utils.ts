@@ -17,7 +17,7 @@ export const getCurrentURL = () => {
  * Get the current package version. If this fails, a null string is returned.
  */
 export const getPackageVersion = () => {
-  return "1.0.7";
+  return "1.0.10";
 };
 
 /**
