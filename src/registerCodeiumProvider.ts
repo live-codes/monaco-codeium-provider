@@ -68,11 +68,11 @@ export const registerCodeiumProvider = (
   );
 
   // CORS pre-flight cache optimization.
-  try {
-    grpcClient.getCompletions({});
-  } catch (e) {
-    // This is expected.
-  }
+  // try {
+  //   grpcClient.getCompletions({});
+  // } catch (e) {
+  //   // This is expected.
+  // }
 
   return {
     getCompletionCount: () => completionCount,
