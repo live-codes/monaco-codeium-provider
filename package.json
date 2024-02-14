@@ -1,6 +1,6 @@
 {
   "name": "@live-codes/monaco-codeium-provider",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "AI auto-completion provider for Monaco editor powered by Codeium",
   "main": "dist/index.umd.js",
   "type": "module",

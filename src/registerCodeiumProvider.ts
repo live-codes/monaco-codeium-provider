@@ -11,12 +11,12 @@ export const registerCodeiumProvider = (
   monaco: typeof Monaco,
   {
     onAutocomplete,
-    baseUrl = "https://web-backend.codeium.com",
+    languageServer = "https://web-backend.codeium.com",
     apiKey,
     getEditors = () => [],
   }: {
     onAutocomplete?: (acceptedText: string) => void;
-    baseUrl?: string;
+    languageServer?: string;
     apiKey?: string;
     getEditors?: () => Monaco.editor.IStandaloneCodeEditor[];
   } = {}
@@ -38,7 +38,7 @@ export const registerCodeiumProvider = (
   };
 
   const transport = createConnectTransport({
-    baseUrl,
+    baseUrl: languageServer,
     useBinaryFormat: true,
   });
 

@@ -5,12 +5,11 @@ import { Language } from "./api/proto/exa/codeium_common_pb/codeium_common_pb";
  * @returns The current URL
  */
 export const getCurrentURL = () => {
-  return null;
-  // try {
-  //   return window.location.href;
-  // } catch (e) {
-  //   return null;
-  // }
+  try {
+    return window.location.origin;
+  } catch (e) {
+    return null;
+  }
 };
 
 /**
